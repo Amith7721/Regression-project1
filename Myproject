@@ -1,0 +1,373 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyNfMQRnc/8WlzuuMC9oFI7Z",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/Amith7721/Regression-project1/blob/main/Myproject\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 1,
+      "metadata": {
+        "id": "e0HihZldrqUs"
+      },
+      "outputs": [],
+      "source": [
+        "import numpy as np # linear algebra\n",
+        "import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)\n",
+        "import plotly.express as px\n",
+        "import seaborn as sns\n",
+        "import matplotlib.pyplot as plt\n",
+        "import plotly.graph_objects as go\n",
+        "from plotly.subplots import make_subplots\n",
+        "\n",
+        "from xgboost import XGBClassifier,XGBRegressor"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import os\n",
+        "for dirname, _, filenames in os.walk(\"C:\\\\Users\\\\amith\\\\Downloads\\\\winequality-red.csv\"):\n",
+        "    for filename in filenames:\n",
+        "        print(os.path.join(dirname, filename))"
+      ],
+      "metadata": {
+        "id": "HMeKrDGysNLp"
+      },
+      "execution_count": 2,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Importing the necessary libraries\n",
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "import matplotlib.pyplot as plt\n",
+        "import seaborn as sns\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "from sklearn.linear_model import LinearRegression\n",
+        "from sklearn.metrics import mean_squared_error, r2_score"
+      ],
+      "metadata": {
+        "id": "GBomccrrsS6v"
+      },
+      "execution_count": 3,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Load the dataset (winequality-red.csv or winequality-white.csv)\n",
+        "url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv'\n",
+        "data = pd.read_csv(url, sep=';')"
+      ],
+      "metadata": {
+        "id": "NHOxZUCNsl_T"
+      },
+      "execution_count": 4,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Display the first 5 rows of the dataset\n",
+        "print(data.head())"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "f_vU3NqSstc-",
+        "outputId": "9060ba5d-9542-4229-a7c9-93917aa068a7"
+      },
+      "execution_count": 5,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "   fixed acidity  volatile acidity  citric acid  residual sugar  chlorides  \\\n",
+            "0            7.4              0.70         0.00             1.9      0.076   \n",
+            "1            7.8              0.88         0.00             2.6      0.098   \n",
+            "2            7.8              0.76         0.04             2.3      0.092   \n",
+            "3           11.2              0.28         0.56             1.9      0.075   \n",
+            "4            7.4              0.70         0.00             1.9      0.076   \n",
+            "\n",
+            "   free sulfur dioxide  total sulfur dioxide  density    pH  sulphates  \\\n",
+            "0                 11.0                  34.0   0.9978  3.51       0.56   \n",
+            "1                 25.0                  67.0   0.9968  3.20       0.68   \n",
+            "2                 15.0                  54.0   0.9970  3.26       0.65   \n",
+            "3                 17.0                  60.0   0.9980  3.16       0.58   \n",
+            "4                 11.0                  34.0   0.9978  3.51       0.56   \n",
+            "\n",
+            "   alcohol  quality  \n",
+            "0      9.4        5  \n",
+            "1      9.8        5  \n",
+            "2      9.8        5  \n",
+            "3      9.8        6  \n",
+            "4      9.4        5  \n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Data overview\n",
+        "print(data.info())\n",
+        "print(data.describe())\n",
+        "\n",
+        "# Check for missing values\n",
+        "print(data.isnull().sum())"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "oFnReuYosvk1",
+        "outputId": "c5489ab5-fa6b-4b74-c368-b609c58ed880"
+      },
+      "execution_count": 6,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "<class 'pandas.core.frame.DataFrame'>\n",
+            "RangeIndex: 1599 entries, 0 to 1598\n",
+            "Data columns (total 12 columns):\n",
+            " #   Column                Non-Null Count  Dtype  \n",
+            "---  ------                --------------  -----  \n",
+            " 0   fixed acidity         1599 non-null   float64\n",
+            " 1   volatile acidity      1599 non-null   float64\n",
+            " 2   citric acid           1599 non-null   float64\n",
+            " 3   residual sugar        1599 non-null   float64\n",
+            " 4   chlorides             1599 non-null   float64\n",
+            " 5   free sulfur dioxide   1599 non-null   float64\n",
+            " 6   total sulfur dioxide  1599 non-null   float64\n",
+            " 7   density               1599 non-null   float64\n",
+            " 8   pH                    1599 non-null   float64\n",
+            " 9   sulphates             1599 non-null   float64\n",
+            " 10  alcohol               1599 non-null   float64\n",
+            " 11  quality               1599 non-null   int64  \n",
+            "dtypes: float64(11), int64(1)\n",
+            "memory usage: 150.0 KB\n",
+            "None\n",
+            "       fixed acidity  volatile acidity  citric acid  residual sugar  \\\n",
+            "count    1599.000000       1599.000000  1599.000000     1599.000000   \n",
+            "mean        8.319637          0.527821     0.270976        2.538806   \n",
+            "std         1.741096          0.179060     0.194801        1.409928   \n",
+            "min         4.600000          0.120000     0.000000        0.900000   \n",
+            "25%         7.100000          0.390000     0.090000        1.900000   \n",
+            "50%         7.900000          0.520000     0.260000        2.200000   \n",
+            "75%         9.200000          0.640000     0.420000        2.600000   \n",
+            "max        15.900000          1.580000     1.000000       15.500000   \n",
+            "\n",
+            "         chlorides  free sulfur dioxide  total sulfur dioxide      density  \\\n",
+            "count  1599.000000          1599.000000           1599.000000  1599.000000   \n",
+            "mean      0.087467            15.874922             46.467792     0.996747   \n",
+            "std       0.047065            10.460157             32.895324     0.001887   \n",
+            "min       0.012000             1.000000              6.000000     0.990070   \n",
+            "25%       0.070000             7.000000             22.000000     0.995600   \n",
+            "50%       0.079000            14.000000             38.000000     0.996750   \n",
+            "75%       0.090000            21.000000             62.000000     0.997835   \n",
+            "max       0.611000            72.000000            289.000000     1.003690   \n",
+            "\n",
+            "                pH    sulphates      alcohol      quality  \n",
+            "count  1599.000000  1599.000000  1599.000000  1599.000000  \n",
+            "mean      3.311113     0.658149    10.422983     5.636023  \n",
+            "std       0.154386     0.169507     1.065668     0.807569  \n",
+            "min       2.740000     0.330000     8.400000     3.000000  \n",
+            "25%       3.210000     0.550000     9.500000     5.000000  \n",
+            "50%       3.310000     0.620000    10.200000     6.000000  \n",
+            "75%       3.400000     0.730000    11.100000     6.000000  \n",
+            "max       4.010000     2.000000    14.900000     8.000000  \n",
+            "fixed acidity           0\n",
+            "volatile acidity        0\n",
+            "citric acid             0\n",
+            "residual sugar          0\n",
+            "chlorides               0\n",
+            "free sulfur dioxide     0\n",
+            "total sulfur dioxide    0\n",
+            "density                 0\n",
+            "pH                      0\n",
+            "sulphates               0\n",
+            "alcohol                 0\n",
+            "quality                 0\n",
+            "dtype: int64\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Split data into features (X) and target (y)\n",
+        "X = data.drop('quality', axis=1)\n",
+        "y = data['quality']"
+      ],
+      "metadata": {
+        "id": "2MBoc7oys00M"
+      },
+      "execution_count": 7,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Split the dataset into training and testing sets (80% train, 20% test)\n",
+        "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+      ],
+      "metadata": {
+        "id": "JzQqZZThs4yB"
+      },
+      "execution_count": 8,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from sklearn.ensemble import RandomForestRegressor\n",
+        "from sklearn.model_selection import cross_val_score\n",
+        "\n",
+        "# Initialize Random Forest model\n",
+        "rf_model = RandomForestRegressor(n_estimators=100, random_state=42)\n",
+        "\n",
+        "# Train the model\n",
+        "rf_model.fit(X_train, y_train)\n",
+        "\n",
+        "# Predict on test set\n",
+        "y_pred_rf = rf_model.predict(X_test)"
+      ],
+      "metadata": {
+        "id": "6V4rML-Ss9Ke"
+      },
+      "execution_count": 9,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Evaluate the model\n",
+        "rf_r2 = r2_score(y_test, y_pred_rf)\n",
+        "rf_mse = mean_squared_error(y_test, y_pred_rf)\n",
+        "rf_rmse = np.sqrt(rf_mse)\n",
+        "\n",
+        "print(f'Random Forest R² Score: {rf_r2}')\n",
+        "print(f'Random Forest MSE: {rf_mse}')\n",
+        "print(f'Random Forest RMSE: {rf_rmse}')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "4XWmmQ-_tBGk",
+        "outputId": "e7e84a93-0b58-43c5-b89c-510a0ddd9a99"
+      },
+      "execution_count": 10,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Random Forest R² Score: 0.5390429623873638\n",
+            "Random Forest MSE: 0.30123812499999997\n",
+            "Random Forest RMSE: 0.5488516420673258\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Assign values for the features (as a single data point)\n",
+        "# Example: Create a dictionary with custom feature values\n",
+        "new_data = {\n",
+        "    'fixed acidity': 7.4,\n",
+        "    'volatile acidity': 0.7,\n",
+        "    'citric acid': 0.0,\n",
+        "    'residual sugar': 1.9,\n",
+        "    'chlorides': 0.076,\n",
+        "    'free sulfur dioxide': 11.0,\n",
+        "    'total sulfur dioxide': 34.0,\n",
+        "    'density': 0.9978,\n",
+        "    'pH': 3.51,\n",
+        "    'sulphates': 0.56,\n",
+        "    'alcohol': 9.4\n",
+        "}\n",
+        "\n",
+        "# Convert the dictionary to a DataFrame (single row of feature values)\n",
+        "new_data_df = pd.DataFrame([new_data])\n",
+        "\n",
+        "# Display the new data point\n",
+        "print(\"New data point:\")\n",
+        "print(new_data_df)\n",
+        "\n",
+        "# Use the trained model to predict wine quality for the new data point\n",
+        "predicted_quality =rf_model.predict(new_data_df)\n",
+        "\n",
+        "# Display the predicted quality\n",
+        "print(f'\\nPredicted Wine Quality: {predicted_quality[0]}')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "0KT7PylFtGB8",
+        "outputId": "e161a34e-93e7-4dd8-83d0-19687adf6cc1"
+      },
+      "execution_count": 13,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "New data point:\n",
+            "   fixed acidity  volatile acidity  citric acid  residual sugar  chlorides  \\\n",
+            "0            7.4               0.7          0.0             1.9      0.076   \n",
+            "\n",
+            "   free sulfur dioxide  total sulfur dioxide  density    pH  sulphates  \\\n",
+            "0                 11.0                  34.0   0.9978  3.51       0.56   \n",
+            "\n",
+            "   alcohol  \n",
+            "0      9.4  \n",
+            "\n",
+            "Predicted Wine Quality: 5.02\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "W1FauEPUtKCe"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
